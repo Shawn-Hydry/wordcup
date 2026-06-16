@@ -1,0 +1,19 @@
+{
+  "name": "世界杯预测",
+  "appid": "__UNI__WORLDCUP",
+  "description": "2026美加墨世界杯比赛预测",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "wx10180307a6ecdce5",
+    "setting": {
+      "urlCheck": true
+    },
+    "usingComponents": true,
+    "optimization": {
+      "subPackages": true
+    },
+    "lazyCodeLoading": "requiredComponents"
+  }
+}

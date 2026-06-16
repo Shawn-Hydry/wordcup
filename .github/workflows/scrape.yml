@@ -1,0 +1,76 @@
+name: Scrape World Cup Data
+
+on:
+  # 每日定时执行（UTC 6:00 和 14:00 = 北京时间 14:00 和 22:00）
+  schedule:
+    - cron: '0 6 * * *'
+    - cron: '0 14 * * *'
+  # 支持手动触发
+  workflow_dispatch:
+    inputs:
+      date:
+        description: '指定日期 (YYYY-MM-DD)'
+        required: false
+        default: ''
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper
+        run: |
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            python -m scraper.run --date "${{ github.event.inputs.date }}"
+          else
+            python -m scraper.run
+          fi
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet backend/data/; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No data changes detected"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Data changes detected!"
+            git diff --stat backend/data/
+          fi
+
+      - name: Commit and push changes
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config user.name "WorldCup Bot"
+          git config user.email "bot@worldcup-predict.dev"
+          git add backend/data/
+          git commit -m "📊 更新世界杯比赛数据 $(date +%Y-%m-%d)"
+          git push
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### 爬取结果" >> $GITHUB_STEP_SUMMARY
+          if [ -f backend/data/matches.json ]; then
+            TOTAL=$(python -c "import json; d=json.load(open('backend/data/matches.json')); print(len(d))")
+            FINISHED=$(python -c "import json; d=json.load(open('backend/data/matches.json')); print(sum(1 for m in d if m.get('status')=='finished'))")
+            echo "- 总比赛数: $TOTAL" >> $GITHUB_STEP_SUMMARY
+            echo "- 已完赛: $FINISHED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⚠️ 无数据文件" >> $GITHUB_STEP_SUMMARY
+          fi

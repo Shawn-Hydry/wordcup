@@ -1,0 +1,144 @@
+/* ====== Golden Trophy Night 设计系统 ====== */
+
+/* 主色调 */
+$primary: #FFB800;
+$primary-dark: #CC9300;
+$primary-glow: rgba(255, 184, 0, 0.25);
+$accent: #00E5A0;
+$accent-dark: #00B87D;
+
+/* 背景 */
+$bg-dark: #0A0E1A;
+$bg-card: rgba(18, 24, 42, 0.85);
+$bg-card-solid: #121A2E;
+$bg-elevated: rgba(26, 34, 56, 0.9);
+
+/* 文字 */
+$text-primary: #F0F0F5;
+$text-secondary: #9A9AB0;
+$text-muted: #5A5A72;
+
+/* 边框 */
+$border: rgba(255, 184, 0, 0.1);
+$border-active: rgba(255, 184, 0, 0.4);
+
+/* 语义色 */
+$success: #00E5A0;
+$warning: #FFB800;
+$danger: #FF4757;
+$info: #5B8DEF;
+
+/* 渐变 */
+$gradient-gold: linear-gradient(135deg, #FFB800, #FF8C00);
+$gradient-midnight: linear-gradient(180deg, #0A0E1A, #0D1225);
+$gradient-card: linear-gradient(135deg, rgba(18, 24, 42, 0.9), rgba(12, 16, 30, 0.95));
+$gradient-header: linear-gradient(135deg, #121A2E 0%, #0D1225 50%, #1A1230 100%);
+
+/* 阴影 */
+$shadow-card: 0 8rpx 32rpx rgba(0, 0, 0, 0.4), 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+$shadow-glow: 0 0 40rpx rgba(255, 184, 0, 0.15);
+$shadow-float: 0 16rpx 48rpx rgba(0, 0, 0, 0.5);
+
+/* ====== 全局样式 ====== */
+page {
+  background-color: $bg-dark;
+  background-image: $gradient-midnight;
+  color: $text-primary;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  font-size: 28rpx;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 通用卡片 — 毛玻璃风格 */
+.card {
+  background: $bg-card;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24rpx;
+  padding: 28rpx;
+  margin: 16rpx 24rpx;
+  border: 1rpx solid $border;
+  box-shadow: $shadow-card;
+}
+
+/* 标题样式 */
+.section-title {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: $text-primary;
+  margin-bottom: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  letter-spacing: 1rpx;
+}
+
+.section-title::before {
+  content: '';
+  display: inline-block;
+  width: 6rpx;
+  height: 28rpx;
+  background: $gradient-gold;
+  border-radius: 3rpx;
+}
+
+/* 概率条 */
+.prob-bar {
+  display: flex;
+  align-items: center;
+  margin: 14rpx 0;
+  gap: 16rpx;
+
+  .prob-label {
+    width: 80rpx;
+    font-size: 24rpx;
+    color: $text-secondary;
+    text-align: right;
+    font-weight: 500;
+  }
+
+  .prob-track {
+    flex: 1;
+    height: 18rpx;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 9rpx;
+    overflow: hidden;
+
+    .prob-fill {
+      height: 100%;
+      border-radius: 9rpx;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  }
+
+  .prob-value {
+    width: 88rpx;
+    font-size: 24rpx;
+    font-weight: 700;
+    color: $text-primary;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* 标签 */
+.tag {
+  display: inline-block;
+  padding: 6rpx 18rpx;
+  border-radius: 10rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  letter-spacing: 1rpx;
+
+  &.tag-success { background: rgba(0, 229, 160, 0.15); color: $success; }
+  &.tag-warning { background: rgba(255, 184, 0, 0.15); color: $warning; }
+  &.tag-danger  { background: rgba(255, 71, 87, 0.15); color: $danger; }
+  &.tag-primary { background: $primary-glow; color: $primary; }
+}
+
+/* 分割线 */
+.divider {
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, $border, transparent);
+  margin: 24rpx 0;
+}
