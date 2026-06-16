@@ -1,7 +1,12 @@
 """FastAPI 入口 + API 路由"""
 import time
+from datetime import datetime
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 from .engine import engine
 from .aggregator import generate_external_predictions
@@ -11,8 +16,38 @@ from .repository import (
     save_external_predictions, save_player_status,
 )
 from .seed_data import seed_matches, seed_player_data, seed_stats
+from .updater import run_full_update
 
-app = FastAPI(title="世界杯预测 API", version="1.0.0")
+# APScheduler 实例
+scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
+
+# 定时任务：每日 14:00 / 18:00 / 22:00 (北京时间) 执行数据更新
+scheduler.add_job(
+    run_full_update,
+    trigger=CronTrigger(hour="14,18,22", minute=0),
+    id="daily_update",
+    name="每日数据更新（爬取完赛+重算预测）",
+    replace_existing=True,
+)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用生命周期：启动时初始化数据 + 启动定时任务，关闭时停止定时任务"""
+    # Startup
+    from .repository import _memory_store
+    if "matches.json" not in _memory_store:
+        for match in seed_matches:
+            await save_match(match)
+    scheduler.start()
+    print("[Scheduler] 已启动，定时任务: 14:00 / 18:00 / 22:00 (北京时间)")
+    yield
+    # Shutdown
+    scheduler.shutdown()
+    print("[Scheduler] 已关闭")
+
+
+app = FastAPI(title="世界杯预测 API", version="1.0.0", lifespan=lifespan)
 
 # CORS
 app.add_middleware(
@@ -21,16 +56,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-async def startup_seed():
-    """应用启动时自动从种子数据初始化（Vercel Serverless 冷启动后内存为空）"""
-    from .repository import _memory_store
-    if "matches.json" not in _memory_store:
-        for match in seed_matches:
-            await save_match(match)
-
 
 # 请求日志中间件
 @app.middleware("http")
@@ -49,12 +74,20 @@ async def root():
     return {
         "name": "2026世界杯预测 API",
         "version": "1.0.0",
+        "scheduler": {
+            "timezone": "Asia/Shanghai",
+            "jobs": [
+                {"id": j.id, "name": j.name, "next_run": str(j.next_run_time)}
+                for j in scheduler.get_jobs()
+            ],
+        },
         "endpoints": {
             "健康检查": "GET /health",
             "比赛列表": "GET /api/matches?date=YYYY-MM-DD",
             "比赛详情": "GET /api/matches/{match_id}",
             "完整预测": "GET /api/predict/{match_id}/full",
             "初始化数据": "POST /api/admin/seed",
+            "手动刷新": "POST /api/admin/refresh",
         },
     }
 
@@ -181,3 +214,36 @@ async def admin_add_match(match: dict):
         return {"success": True, "data": saved}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+
+@app.post("/api/admin/refresh")
+async def admin_refresh():
+    """手动触发数据更新（爬取完赛结果 + 重算预测）"""
+    try:
+        result = await run_full_update()
+        return {"success": True, "data": result}
+    except Exception as e:
+        print(f"[Refresh] Error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@app.get("/api/admin/scheduler")
+async def admin_scheduler_status():
+    """查看定时任务状态"""
+    jobs = scheduler.get_jobs()
+    return {
+        "success": True,
+        "data": {
+            "running": scheduler.running,
+            "timezone": "Asia/Shanghai",
+            "jobs": [
+                {
+                    "id": j.id,
+                    "name": j.name,
+                    "nextRun": str(j.next_run_time),
+                    "trigger": str(j.trigger),
+                }
+                for j in jobs
+            ],
+        },
+    }
