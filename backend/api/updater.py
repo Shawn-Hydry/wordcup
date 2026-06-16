@@ -12,16 +12,11 @@
 """
 import asyncio
 import json
-import sys
 import os
 from datetime import datetime
 from typing import Optional
 
-# 确保 scraper 包可被导入（Vercel Serverless 环境中 api/ 是根目录）
-_api_dir = os.path.dirname(os.path.abspath(__file__))
-_backend_dir = os.path.dirname(_api_dir)
-if _backend_dir not in sys.path:
-    sys.path.insert(0, _backend_dir)
+import httpx
 
 from .engine import engine
 from .aggregator import generate_external_predictions
@@ -31,11 +26,100 @@ from .repository import (
 )
 from .seed_data import seed_matches, seed_player_data, seed_stats
 
+# Vercel Serverless 环境检测
+IS_VERCEL = os.environ.get("VERCEL") == "1"
+
+# FIFA API 端点
+FIFA_MATCHES_API = "https://www.fifa.com/api/hub/matches"
+FIFA_MATCH_DETAIL_API = "https://www.fifa.com/api/hub/match/{match_id}"
+
+
+async def _fetch_fifa_matches() -> list[dict]:
+    """从 FIFA API 获取比赛结果列表"""
+    async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
+        try:
+            resp = await client.get(
+                FIFA_MATCHES_API,
+                params={"competitionId": "17", "seasonId": "2026"},
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"},
+            )
+            if resp.status_code != 200:
+                print(f"[Updater] FIFA API 返回 {resp.status_code}")
+                return []
+            data = resp.json()
+            return data.get("matches", data.get("results", []))
+        except Exception as e:
+            print(f"[Updater] FIFA API 请求失败: {e}")
+            return []
+
+
+async def _fetch_fifa_match_detail(match_id: str) -> Optional[dict]:
+    """从 FIFA API 获取单场比赛详情（进球、红黄牌等时间轴）"""
+    async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
+        try:
+            url = FIFA_MATCH_DETAIL_API.format(match_id=match_id)
+            resp = await client.get(
+                url,
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"},
+            )
+            if resp.status_code != 200:
+                return None
+            data = resp.json()
+            # 提取时间轴事件
+            timeline = []
+            for event in data.get("events", data.get("timeline", [])):
+                evt = {
+                    "type": event.get("type", "").lower(),
+                    "minute": event.get("minute", event.get("time", 0)),
+                    "player": event.get("player", {}).get("name", event.get("playerName", "")),
+                    "team": event.get("team", event.get("side", "")),
+                }
+                if evt["type"] in ("goal", "yellow_card", "red_card", "own_goal", "penalty"):
+                    timeline.append(evt)
+            return {"timeline": timeline} if timeline else None
+        except Exception as e:
+            print(f"[Updater] FIFA 详情请求失败: {e}")
+            return None
+
+
+def _parse_fifa_match(raw: dict) -> Optional[dict]:
+    """将 FIFA API 原始数据解析为统一格式"""
+    try:
+        home = raw.get("home", raw.get("homeTeam", {}))
+        away = raw.get("away", raw.get("awayTeam", {}))
+        score = raw.get("score", {})
+
+        status_map = {"played": "finished", "live": "live", "upcoming": "upcoming"}
+        raw_status = raw.get("status", raw.get("matchStatus", "")).lower()
+        status = status_map.get(raw_status, "upcoming")
+
+        match = {
+            "id": raw.get("id", raw.get("matchId", "")),
+            "homeTeam": {"id": home.get("id", ""), "name": home.get("name", home.get("displayName", ""))},
+            "awayTeam": {"id": away.get("id", ""), "name": away.get("name", away.get("displayName", ""))},
+            "status": status,
+            "date": raw.get("date", raw.get("matchDate", "")),
+        }
+
+        if status == "finished" and score:
+            home_score = score.get("home", score.get("total", {}).get("home", 0))
+            away_score = score.get("away", score.get("total", {}).get("away", 0))
+            match["result"] = {
+                "homeScore": home_score,
+                "awayScore": away_score,
+                "timeline": [],
+            }
+
+        return match
+    except Exception as e:
+        print(f"[Updater] 解析 FIFA 数据失败: {e}")
+        return None
+
 
 async def update_finished_results() -> dict:
     """第一步：爬取所有已完赛比赛的最新结果
 
-    尝试从 FIFA API / FlashScore 获取数据，
+    尝试从 FIFA API 获取数据，
     如果爬取失败则保留现有种子数据不变。
     """
     print(f"[Updater] ===== 开始更新完赛结果 {datetime.utcnow().isoformat()}Z =====")
@@ -44,36 +128,40 @@ async def update_finished_results() -> dict:
 
     # 尝试从 FIFA API 爬取
     try:
-        from scraper.fifa import fetch_via_api
-        scraped_matches = await fetch_via_api()
+        raw_matches = await _fetch_fifa_matches()
+        for raw in raw_matches:
+            parsed = _parse_fifa_match(raw)
+            if parsed:
+                scraped_matches.append(parsed)
         print(f"[Updater] FIFA API 返回 {len(scraped_matches)} 场比赛")
     except Exception as e:
         print(f"[Updater] FIFA API 爬取失败: {e}")
-
-    # FIFA 失败则尝试 FlashScore
-    if not scraped_matches:
-        try:
-            from scraper.flashscore import fetch_match_results
-            scraped_matches = await fetch_match_results()
-            print(f"[Updater] FlashScore 返回 {len(scraped_matches)} 场比赛")
-        except Exception as e:
-            print(f"[Updater] FlashScore 爬取失败: {e}")
 
     # 合并爬取数据与现有数据
     updated_count = 0
     current_matches = await get_all_matches()
 
     if scraped_matches:
-        from scraper.merger import merge_with_existing
-        merged = merge_with_existing(scraped_matches, current_matches)
-        for match in merged:
+        # 按 ID 合并：爬取数据覆盖现有数据
+        existing_map = {m["id"]: m for m in current_matches}
+        for scraped in scraped_matches:
+            mid = scraped["id"]
+            if mid in existing_map:
+                # 合并：更新状态和结果
+                existing = existing_map[mid]
+                if scraped.get("status") == "finished" and existing.get("status") != "finished":
+                    existing["status"] = "finished"
+                    if scraped.get("result"):
+                        existing["result"] = scraped["result"]
+                    updated_count += 1
+                    print(f"[Updater] 新完赛: {mid} {scraped['homeTeam']['name']} vs {scraped['awayTeam']['name']}")
+            else:
+                # 新比赛
+                existing_map[mid] = scraped
+
+        current_matches = list(existing_map.values())
+        for match in current_matches:
             await save_match(match)
-            # 检查是否有新完赛
-            old = next((m for m in current_matches if m["id"] == match["id"]), None)
-            if old and old.get("status") != "finished" and match.get("status") == "finished":
-                updated_count += 1
-                print(f"[Updater] 新完赛: {match['id']} {match['homeTeam']['name']} vs {match['awayTeam']['name']}")
-        current_matches = merged
     else:
         print("[Updater] 爬取无数据，保留现有种子数据")
 
@@ -85,10 +173,8 @@ async def update_finished_results() -> dict:
             # 检查是否有时间轴数据（进球详情）
             if not result.get("timeline") or len(result.get("timeline", [])) == 0:
                 try:
-                    from scraper.fifa import fetch_match_result
-                    detail = await fetch_match_result(match["id"])
+                    detail = await _fetch_fifa_match_detail(match["id"])
                     if detail:
-                        # 合并详情到现有结果
                         result.update(detail)
                         await save_match(match)
                         detail_count += 1
