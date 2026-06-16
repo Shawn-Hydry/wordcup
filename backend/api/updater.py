@@ -12,8 +12,16 @@
 """
 import asyncio
 import json
+import sys
+import os
 from datetime import datetime
 from typing import Optional
+
+# 确保 scraper 包可被导入（Vercel Serverless 环境中 api/ 是根目录）
+_api_dir = os.path.dirname(os.path.abspath(__file__))
+_backend_dir = os.path.dirname(_api_dir)
+if _backend_dir not in sys.path:
+    sys.path.insert(0, _backend_dir)
 
 from .engine import engine
 from .aggregator import generate_external_predictions
