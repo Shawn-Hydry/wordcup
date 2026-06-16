@@ -42,6 +42,23 @@ async def log_requests(request: Request, call_next):
     return response
 
 
+# ============ 根路径欢迎页 ============
+
+@app.get("/")
+async def root():
+    return {
+        "name": "2026世界杯预测 API",
+        "version": "1.0.0",
+        "endpoints": {
+            "健康检查": "GET /health",
+            "比赛列表": "GET /api/matches?date=YYYY-MM-DD",
+            "比赛详情": "GET /api/matches/{match_id}",
+            "完整预测": "GET /api/predict/{match_id}/full",
+            "初始化数据": "POST /api/admin/seed",
+        },
+    }
+
+
 # ============ 健康检查 ============
 
 @app.get("/health")
