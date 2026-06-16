@@ -1,12 +1,11 @@
 """FastAPI 入口 + API 路由"""
+import os
 import time
 from datetime import datetime
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
 
 from .engine import engine
 from .aggregator import generate_external_predictions
@@ -18,33 +17,47 @@ from .repository import (
 from .seed_data import seed_matches, seed_player_data, seed_stats
 from .updater import run_full_update
 
-# APScheduler 实例
-scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
+# APScheduler：仅在非 Serverless 环境（本地开发）中启用
+IS_VERCEL = os.environ.get("VERCEL") == "1"
+scheduler = None
 
-# 定时任务：每日 14:00 / 18:00 / 22:00 (北京时间) 执行数据更新
-scheduler.add_job(
-    run_full_update,
-    trigger=CronTrigger(hour="14,18,22", minute=0),
-    id="daily_update",
-    name="每日数据更新（爬取完赛+重算预测）",
-    replace_existing=True,
-)
+if not IS_VERCEL:
+    try:
+        from apscheduler.schedulers.asyncio import AsyncIOScheduler
+        from apscheduler.triggers.cron import CronTrigger
+
+        scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
+        scheduler.add_job(
+            run_full_update,
+            trigger=CronTrigger(hour="14,18,22", minute=0),
+            id="daily_update",
+            name="每日数据更新（爬取完赛+重算预测）",
+            replace_existing=True,
+        )
+        print("[Scheduler] APScheduler 已配置（本地模式）")
+    except ImportError:
+        print("[Scheduler] APScheduler 未安装，定时任务不可用")
+        scheduler = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用生命周期：启动时初始化数据 + 启动定时任务，关闭时停止定时任务"""
+    """应用生命周期：启动时初始化数据 + 启动定时任务（仅本地），关闭时停止"""
     # Startup
     from .repository import _memory_store
     if "matches.json" not in _memory_store:
         for match in seed_matches:
             await save_match(match)
-    scheduler.start()
-    print("[Scheduler] 已启动，定时任务: 14:00 / 18:00 / 22:00 (北京时间)")
+    if scheduler:
+        scheduler.start()
+        print("[Scheduler] 已启动，定时任务: 14:00 / 18:00 / 22:00 (北京时间)")
+    else:
+        print("[Scheduler] Serverless 模式，定时任务由 GitHub Actions 触发")
     yield
     # Shutdown
-    scheduler.shutdown()
-    print("[Scheduler] 已关闭")
+    if scheduler:
+        scheduler.shutdown()
+        print("[Scheduler] 已关闭")
 
 
 app = FastAPI(title="世界杯预测 API", version="1.0.0", lifespan=lifespan)
@@ -71,16 +84,20 @@ async def log_requests(request: Request, call_next):
 
 @app.get("/")
 async def root():
-    return {
-        "name": "2026世界杯预测 API",
-        "version": "1.0.0",
-        "scheduler": {
+    scheduler_info = {"mode": "serverless", "note": "定时任务由 GitHub Actions 触发"}
+    if scheduler:
+        scheduler_info = {
+            "mode": "local",
             "timezone": "Asia/Shanghai",
             "jobs": [
                 {"id": j.id, "name": j.name, "next_run": str(j.next_run_time)}
                 for j in scheduler.get_jobs()
             ],
-        },
+        }
+    return {
+        "name": "2026世界杯预测 API",
+        "version": "1.0.0",
+        "scheduler": scheduler_info,
         "endpoints": {
             "健康检查": "GET /health",
             "比赛列表": "GET /api/matches?date=YYYY-MM-DD",
@@ -230,11 +247,21 @@ async def admin_refresh():
 @app.get("/api/admin/scheduler")
 async def admin_scheduler_status():
     """查看定时任务状态"""
+    if not scheduler:
+        return {
+            "success": True,
+            "data": {
+                "running": False,
+                "mode": "serverless",
+                "note": "Vercel Serverless 环境不支持持久定时任务，请使用 GitHub Actions 触发",
+            },
+        }
     jobs = scheduler.get_jobs()
     return {
         "success": True,
         "data": {
             "running": scheduler.running,
+            "mode": "local",
             "timezone": "Asia/Shanghai",
             "jobs": [
                 {
