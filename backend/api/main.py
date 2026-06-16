@@ -23,6 +23,15 @@ app.add_middleware(
 )
 
 
+@app.on_event("startup")
+async def startup_seed():
+    """应用启动时自动从种子数据初始化（Vercel Serverless 冷启动后内存为空）"""
+    from .repository import _memory_store
+    if "matches.json" not in _memory_store:
+        for match in seed_matches:
+            await save_match(match)
+
+
 # 请求日志中间件
 @app.middleware("http")
 async def log_requests(request: Request, call_next):

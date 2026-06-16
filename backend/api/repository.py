@@ -1,10 +1,29 @@
-"""数据仓库 - JSON 文件存储"""
+"""数据仓库 - 内存存储（兼容 Vercel Serverless 只读文件系统）
+
+Vercel Serverless 环境无持久化写入能力，采用内存缓存策略：
+- 首次请求从种子数据初始化
+- 写操作仅在内存中生效（冷启动后重置）
+- 本地开发时仍使用 JSON 文件持久化
+"""
 import json
 import os
+import tempfile
 from pathlib import Path
 from typing import Optional
 
-DATA_DIR = Path(__file__).parent.parent / "data"
+# 检测是否在 Vercel Serverless 环境
+IS_VERCEL = os.environ.get("VERCEL") == "1"
+
+# 本地开发：使用项目 data 目录
+LOCAL_DATA_DIR = Path(__file__).parent.parent / "data"
+
+# Vercel 环境：使用 /tmp（可写但冷启动丢失）
+VERCEL_DATA_DIR = Path(tempfile.gettempdir()) / "wordcup_data"
+
+DATA_DIR = VERCEL_DATA_DIR if IS_VERCEL else LOCAL_DATA_DIR
+
+# ============ 内存缓存 ============
+_memory_store: dict[str, list | dict] = {}
 
 
 def _ensure_dir():
@@ -12,22 +31,36 @@ def _ensure_dir():
 
 
 def _read_json(filename: str) -> Optional[list | dict]:
+    # 优先从内存缓存读取
+    if filename in _memory_store:
+        return _memory_store[filename]
+
     _ensure_dir()
     filepath = DATA_DIR / filename
-    if not filepath.exists():
-        return None
-    try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return None
+    if filepath.exists():
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                _memory_store[filename] = data
+                return data
+        except (json.JSONDecodeError, OSError):
+            pass
+    return None
 
 
 def _write_json(filename: str, data):
-    _ensure_dir()
-    filepath = DATA_DIR / filename
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    # 写入内存缓存
+    _memory_store[filename] = data
+
+    # 尝试写入文件（本地开发持久化 / Vercel /tmp 缓存）
+    try:
+        _ensure_dir()
+        filepath = DATA_DIR / filename
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except OSError:
+        # Vercel 只读文件系统下静默忽略
+        pass
 
 
 # ============ 比赛数据 CRUD ============
