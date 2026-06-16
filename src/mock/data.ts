@@ -11,8 +11,7 @@ const isoMap: Record<string, string> = {
 }
 
 function flagUrl(id: string): string {
-  const code = isoMap[id] || id
-  return `https://flagcdn.com/w80/${code}.png`
+  return `/static/flags/${id}.png`
 }
 
 // ============ 球队数据 ============

@@ -10,7 +10,7 @@ import type { IPredictionRepository } from './interface'
  */
 let _instance: IPredictionRepository | null = null
 
-const USE_API = import.meta.env.VITE_USE_API === 'true'
+const USE_API = import.meta.env.VITE_USE_API === 'true' || true
 
 export function getRepository(): IPredictionRepository {
   if (!_instance) {

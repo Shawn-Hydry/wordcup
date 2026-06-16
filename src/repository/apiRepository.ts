@@ -2,7 +2,7 @@ import type { IPredictionRepository } from './interface'
 import type { Match, FullPrediction, WinPrediction, PlayerStatusData, ScorePrediction, ExternalPredictData } from './types'
 
 // API 基地址，开发环境默认后端地址
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://backend-ashy-pi-46.vercel.app'
 
 /** 封装 uni.request 为 Promise */
 function request<T>(options: UniApp.RequestOptions): Promise<T> {

@@ -1,11 +1,11 @@
-"""种子数据 - 2026世界杯小组赛"""
+﻿"""种子数据 - 2026世界杯小组赛"""
 
 # ============ 已完赛比赛 A1-F2 ============
 seed_matches: list[dict] = [
     {
         "id": "A1",
         "homeTeam": {
-            "id": "mex", "name": "墨西哥", "flag": "🇲🇽", "fifaRank": 15,
+            "id": "mex", "name": "墨西哥", "flag": "🇲🇽", "flagUrl": "/static/flags/mex.png", "fifaRank": 15,
             "formation": "4-3-3",
             "style": "攻守平衡，强调中场控制与边路突破",
             "starPlayer": "基尼奥内斯",
@@ -13,7 +13,7 @@ seed_matches: list[dict] = [
             "coachStyle": "攻守平衡，强调中场控制与边路突破"
         },
         "awayTeam": {
-            "id": "rsa", "name": "南非", "flag": "🇿🇦", "fifaRank": 60,
+            "id": "rsa", "name": "南非", "flag": "🇿🇦", "flagUrl": "/static/flags/rsa.png", "fifaRank": 60,
             "formation": "4-4-2",
             "style": "防守反击，注重身体对抗与快速推进",
             "starPlayer": "福斯特",
@@ -38,7 +38,7 @@ seed_matches: list[dict] = [
     {
         "id": "A2",
         "homeTeam": {
-            "id": "kor", "name": "韩国", "flag": "🇰🇷", "fifaRank": 25,
+            "id": "kor", "name": "韩国", "flag": "🇰🇷", "flagUrl": "/static/flags/kor.png", "fifaRank": 25,
             "formation": "4-2-3-1",
             "style": "高位压迫，快速转换，边路突破犀利",
             "starPlayer": "黄仁范",
@@ -46,7 +46,7 @@ seed_matches: list[dict] = [
             "coachStyle": "高位压迫，快速转换，边路突破犀利"
         },
         "awayTeam": {
-            "id": "cze", "name": "捷克", "flag": "🇨🇿", "fifaRank": 35,
+            "id": "cze", "name": "捷克", "flag": "🇨🇿", "flagUrl": "/static/flags/cze.png", "fifaRank": 35,
             "formation": "4-2-3-1",
             "style": "务实防守，定位球威胁大",
             "starPlayer": "克雷伊奇",
@@ -72,7 +72,7 @@ seed_matches: list[dict] = [
     {
         "id": "B1",
         "homeTeam": {
-            "id": "can", "name": "加拿大", "flag": "🇨🇦", "fifaRank": 45,
+            "id": "can", "name": "加拿大", "flag": "🇨🇦", "flagUrl": "/static/flags/can.png", "fifaRank": 45,
             "formation": "4-3-3",
             "style": "高位逼抢，快速转换",
             "starPlayer": "拉林",
@@ -80,7 +80,7 @@ seed_matches: list[dict] = [
             "coachStyle": "高位逼抢，快速转换"
         },
         "awayTeam": {
-            "id": "bih", "name": "波黑", "flag": "🇧🇦", "fifaRank": 55,
+            "id": "bih", "name": "波黑", "flag": "🇧🇦", "flagUrl": "/static/flags/bih.png", "fifaRank": 55,
             "formation": "4-2-3-1",
             "style": "攻守平衡，依靠技术型中场组织进攻",
             "starPlayer": "卢基奇",
@@ -105,7 +105,7 @@ seed_matches: list[dict] = [
     {
         "id": "B2",
         "homeTeam": {
-            "id": "qat", "name": "卡塔尔", "flag": "🇶🇦", "fifaRank": 40,
+            "id": "qat", "name": "卡塔尔", "flag": "🇶🇦", "flagUrl": "/static/flags/qat.png", "fifaRank": 40,
             "formation": "4-2-3-1",
             "style": "控球推进，短传渗透",
             "starPlayer": "胡希",
@@ -113,7 +113,7 @@ seed_matches: list[dict] = [
             "coachStyle": "控球推进，短传渗透"
         },
         "awayTeam": {
-            "id": "sui", "name": "瑞士", "flag": "🇨🇭", "fifaRank": 12,
+            "id": "sui", "name": "瑞士", "flag": "🇨🇭", "flagUrl": "/static/flags/sui.png", "fifaRank": 12,
             "formation": "3-4-2-1",
             "style": "稳健防守，快速反击",
             "starPlayer": "恩博洛",
@@ -138,7 +138,7 @@ seed_matches: list[dict] = [
     {
         "id": "C1",
         "homeTeam": {
-            "id": "bra", "name": "巴西", "flag": "🇧🇷", "fifaRank": 3,
+            "id": "bra", "name": "巴西", "flag": "🇧🇷", "flagUrl": "/static/flags/bra.png", "fifaRank": 3,
             "formation": "4-2-3-1",
             "style": "攻势足球，强调控球与高位压迫，边路突破是核心",
             "defenseStyle": "双后腰增强拦截能力",
@@ -148,7 +148,7 @@ seed_matches: list[dict] = [
             "coachStyle": "关系主义足球理念"
         },
         "awayTeam": {
-            "id": "mar", "name": "摩洛哥", "flag": "🇲🇦", "fifaRank": 13,
+            "id": "mar", "name": "摩洛哥", "flag": "🇲🇦", "flagUrl": "/static/flags/mar.png", "fifaRank": 13,
             "formation": "4-3-3",
             "style": "稳健反击，防守组织严密，边路速度突出",
             "starPlayer": "萨伊瓦里",
@@ -173,7 +173,7 @@ seed_matches: list[dict] = [
     {
         "id": "C2",
         "homeTeam": {
-            "id": "hai", "name": "海地", "flag": "🇭🇹", "fifaRank": 70,
+            "id": "hai", "name": "海地", "flag": "🇭🇹", "flagUrl": "/static/flags/hai.png", "fifaRank": 70,
             "formation": "5-3-2",
             "style": "防守反击，密集防守",
             "starPlayer": "纳宗",
@@ -181,7 +181,7 @@ seed_matches: list[dict] = [
             "coachStyle": "防守反击，密集防守"
         },
         "awayTeam": {
-            "id": "sco", "name": "苏格兰", "flag": "🏴", "fifaRank": 30,
+            "id": "sco", "name": "苏格兰", "flag": "🏴", "flagUrl": "/static/flags/sco.png", "fifaRank": 30,
             "formation": "5-4-1",
             "style": "组织防守，定位球战术",
             "starPlayer": "麦金",
@@ -205,7 +205,7 @@ seed_matches: list[dict] = [
     {
         "id": "D1",
         "homeTeam": {
-            "id": "usa", "name": "美国", "flag": "🇺🇸", "fifaRank": 16,
+            "id": "usa", "name": "美国", "flag": "🇺🇸", "flagUrl": "/static/flags/usa.png", "fifaRank": 16,
             "formation": "4-3-3",
             "style": "攻守平衡，高位逼抢，边路冲击力强",
             "starPlayer": "巴洛贡",
@@ -213,7 +213,7 @@ seed_matches: list[dict] = [
             "coachStyle": "攻守平衡，高位逼抢，边路冲击力强"
         },
         "awayTeam": {
-            "id": "par", "name": "巴拉圭", "flag": "🇵🇾", "fifaRank": 50,
+            "id": "par", "name": "巴拉圭", "flag": "🇵🇾", "flagUrl": "/static/flags/par.png", "fifaRank": 50,
             "formation": "4-4-2",
             "style": "防守反击，身体对抗强硬",
             "starPlayer": "阿尔米隆",
@@ -241,7 +241,7 @@ seed_matches: list[dict] = [
     {
         "id": "D2",
         "homeTeam": {
-            "id": "aus", "name": "澳大利亚", "flag": "🇦🇺", "fifaRank": 28,
+            "id": "aus", "name": "澳大利亚", "flag": "🇦🇺", "flagUrl": "/static/flags/aus.png", "fifaRank": 28,
             "formation": "4-2-3-1",
             "style": "高位逼抢，快速转换",
             "starPlayer": "伊兰昆达",
@@ -249,7 +249,7 @@ seed_matches: list[dict] = [
             "coachStyle": "高位逼抢，快速转换"
         },
         "awayTeam": {
-            "id": "tur", "name": "土耳其", "flag": "🇹🇷", "fifaRank": 38,
+            "id": "tur", "name": "土耳其", "flag": "🇹🇷", "flagUrl": "/static/flags/tur.png", "fifaRank": 38,
             "formation": "4-3-3",
             "style": "攻势足球，技术流中场",
             "starPlayer": "恰尔汗奥卢",
@@ -274,7 +274,7 @@ seed_matches: list[dict] = [
     {
         "id": "E1",
         "homeTeam": {
-            "id": "ger", "name": "德国", "flag": "🇩🇪", "fifaRank": 6,
+            "id": "ger", "name": "德国", "flag": "🇩🇪", "flagUrl": "/static/flags/ger.png", "fifaRank": 6,
             "formation": "4-2-3-1",
             "style": "高位压迫，传控结合快速转换",
             "starPlayer": "穆西亚拉",
@@ -282,7 +282,7 @@ seed_matches: list[dict] = [
             "coachStyle": "战术革新者"
         },
         "awayTeam": {
-            "id": "cuw", "name": "库拉索", "flag": "🇨🇼", "fifaRank": 80,
+            "id": "cuw", "name": "库拉索", "flag": "🇨🇼", "flagUrl": "/static/flags/cuw.png", "fifaRank": 80,
             "formation": "5-4-1",
             "style": "防守反击，密集防守",
             "starPlayer": "巴伊恩",
@@ -313,7 +313,7 @@ seed_matches: list[dict] = [
     {
         "id": "E2",
         "homeTeam": {
-            "id": "civ", "name": "科特迪瓦", "flag": "🇨🇮", "fifaRank": 38,
+            "id": "civ", "name": "科特迪瓦", "flag": "🇨🇮", "flagUrl": "/static/flags/civ.png", "fifaRank": 38,
             "formation": "4-3-3",
             "style": "攻守平衡，技术型中场",
             "starPlayer": "阿马德·迪亚洛",
@@ -321,7 +321,7 @@ seed_matches: list[dict] = [
             "coachStyle": "攻守平衡，技术型中场"
         },
         "awayTeam": {
-            "id": "ecu", "name": "厄瓜多尔", "flag": "🇪🇨", "fifaRank": 32,
+            "id": "ecu", "name": "厄瓜多尔", "flag": "🇪🇨", "flagUrl": "/static/flags/ecu.png", "fifaRank": 32,
             "formation": "4-2-3-1",
             "style": "高位逼抢，快速转换",
             "starPlayer": "瓦伦西亚",
@@ -345,7 +345,7 @@ seed_matches: list[dict] = [
     {
         "id": "F1",
         "homeTeam": {
-            "id": "ned", "name": "荷兰", "flag": "🇳🇱", "fifaRank": 5,
+            "id": "ned", "name": "荷兰", "flag": "🇳🇱", "flagUrl": "/static/flags/ned.png", "fifaRank": 5,
             "formation": "3-4-3",
             "style": "全攻全守现代版，边翼卫战术",
             "starPlayer": "范戴克",
@@ -353,7 +353,7 @@ seed_matches: list[dict] = [
             "coachStyle": "荷兰传统体系"
         },
         "awayTeam": {
-            "id": "jpn", "name": "日本", "flag": "🇯🇵", "fifaRank": 18,
+            "id": "jpn", "name": "日本", "flag": "🇯🇵", "flagUrl": "/static/flags/jpn.png", "fifaRank": 18,
             "formation": "4-2-3-1",
             "style": "攻守平衡，快速反击，团队纪律性强",
             "starPlayer": "中村敬斗",
@@ -380,7 +380,7 @@ seed_matches: list[dict] = [
     {
         "id": "F2",
         "homeTeam": {
-            "id": "swe", "name": "瑞典", "flag": "🇸🇪", "fifaRank": 22,
+            "id": "swe", "name": "瑞典", "flag": "🇸🇪", "flagUrl": "/static/flags/swe.png", "fifaRank": 22,
             "formation": "4-3-3",
             "style": "攻守转换快速，高位逼抢",
             "starPlayer": "伊萨克",
@@ -388,7 +388,7 @@ seed_matches: list[dict] = [
             "coachStyle": "攻守转换快速，高位逼抢"
         },
         "awayTeam": {
-            "id": "tun", "name": "突尼斯", "flag": "🇹🇳", "fifaRank": 35,
+            "id": "tun", "name": "突尼斯", "flag": "🇹🇳", "flagUrl": "/static/flags/tun.png", "fifaRank": 35,
             "formation": "4-3-3",
             "style": "防守反击，中场拦截能力强",
             "starPlayer": "哈兹里",
@@ -418,7 +418,7 @@ seed_matches: list[dict] = [
     {
         "id": "match-001",
         "homeTeam": {
-            "id": "bra", "name": "巴西", "flag": "🇧🇷", "fifaRank": 3,
+            "id": "bra", "name": "巴西", "flag": "🇧🇷", "flagUrl": "/static/flags/bra.png", "fifaRank": 3,
             "formation": "4-2-3-1",
             "style": "攻势足球，强调控球与高位压迫，边路突破是核心",
             "defenseStyle": "双后腰增强拦截能力",
@@ -428,7 +428,7 @@ seed_matches: list[dict] = [
             "coachStyle": "关系主义足球理念"
         },
         "awayTeam": {
-            "id": "arg", "name": "阿根廷", "flag": "🇦🇷", "fifaRank": 1,
+            "id": "arg", "name": "阿根廷", "flag": "🇦🇷", "flagUrl": "/static/flags/arg.png", "fifaRank": 1,
             "formation": "4-4-2",
             "style": "务实主义，防守反击为主，围绕梅西构建进攻体系",
             "defenseStyle": "团队纪律性强，防守组织严密",
@@ -446,7 +446,7 @@ seed_matches: list[dict] = [
     {
         "id": "match-002",
         "homeTeam": {
-            "id": "fra", "name": "法国", "flag": "🇫🇷", "fifaRank": 2,
+            "id": "fra", "name": "法国", "flag": "🇫🇷", "flagUrl": "/static/flags/fra.png", "fifaRank": 2,
             "formation": "4-3-3",
             "style": "攻守均衡，姆巴佩的速度是最大武器",
             "starPlayer": "姆巴佩",
@@ -454,7 +454,7 @@ seed_matches: list[dict] = [
             "coachStyle": "务实主义者，擅长淘汰赛"
         },
         "awayTeam": {
-            "id": "eng", "name": "英格兰", "flag": "🏴", "fifaRank": 4,
+            "id": "eng", "name": "英格兰", "flag": "🏴", "flagUrl": "/static/flags/eng.png", "fifaRank": 4,
             "formation": "4-2-3-1",
             "style": "年轻化阵容，边路冲击力强",
             "starPlayer": "贝林厄姆",
@@ -470,7 +470,7 @@ seed_matches: list[dict] = [
     {
         "id": "match-003",
         "homeTeam": {
-            "id": "ger", "name": "德国", "flag": "🇩🇪", "fifaRank": 6,
+            "id": "ger", "name": "德国", "flag": "🇩🇪", "flagUrl": "/static/flags/ger.png", "fifaRank": 6,
             "formation": "4-2-3-1",
             "style": "高位压迫，传控结合快速转换",
             "starPlayer": "穆西亚拉",
@@ -478,7 +478,7 @@ seed_matches: list[dict] = [
             "coachStyle": "战术革新者"
         },
         "awayTeam": {
-            "id": "esp", "name": "西班牙", "flag": "🇪🇸", "fifaRank": 8,
+            "id": "esp", "name": "西班牙", "flag": "🇪🇸", "flagUrl": "/static/flags/esp.png", "fifaRank": 8,
             "formation": "4-3-3",
             "style": "Tiki-Taka进化版，控球+快速渗透",
             "starPlayer": "佩德里",
@@ -494,7 +494,7 @@ seed_matches: list[dict] = [
     {
         "id": "match-004",
         "homeTeam": {
-            "id": "por", "name": "葡萄牙", "flag": "🇵🇹", "fifaRank": 7,
+            "id": "por", "name": "葡萄牙", "flag": "🇵🇹", "flagUrl": "/static/flags/por.png", "fifaRank": 7,
             "formation": "4-3-3",
             "style": "C罗领衔，快速反击+定位球威胁",
             "starPlayer": "C罗",
@@ -502,7 +502,7 @@ seed_matches: list[dict] = [
             "coachStyle": "进攻足球倡导者"
         },
         "awayTeam": {
-            "id": "ned", "name": "荷兰", "flag": "🇳🇱", "fifaRank": 5,
+            "id": "ned", "name": "荷兰", "flag": "🇳🇱", "flagUrl": "/static/flags/ned.png", "fifaRank": 5,
             "formation": "3-4-3",
             "style": "全攻全守现代版，边翼卫战术",
             "starPlayer": "范戴克",

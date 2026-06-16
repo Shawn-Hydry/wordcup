@@ -188,6 +188,7 @@ import ScorePredict from '@/components/ScorePredict/ScorePredict.vue'
 import ExternalPredict from '@/components/ExternalPredict/ExternalPredict.vue'
 import MatchDetail from '@/components/MatchDetail/MatchDetail.vue'
 import type { Match } from '@/repository'
+import { getRepository } from '@/repository'
 
 const store = usePredictionStore()
 const { loading, match, winPrediction, playerStatus, scorePrediction, externalPredict, error }
@@ -273,7 +274,7 @@ function onDatePick(e: any) {
 
 // ====== 数据加载 ======
 async function loadMatchesByDate(date: string) {
-  const repo = (await import('@/repository')).getRepository()
+  const repo = getRepository()
   const allMatches = await repo.getMatchesByDate(date)
   matches.value = allMatches
   currentMatchId.value = ''
